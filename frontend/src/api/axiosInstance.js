@@ -1,7 +1,9 @@
 import axios from "axios"
 
+const BASE_URL = "https://backend-js-1w3g.onrender.com/api/v1"
+
 const axiosInstance = axios.create({
-    baseURL: "https://backend-js-1w3g.onrender.com/api/v1",
+    baseURL: BASE_URL,
     withCredentials: true,
 })
 
@@ -27,18 +29,28 @@ axiosInstance.interceptors.response.use(
     async (error) => {
         const originalRequest = error.config
 
+        if (originalRequest?.url?.includes("/users/refresh-token")) {
+            return Promise.reject(error)
+        }
+
         if (error.response?.status === 401 && !originalRequest._retry) {
             originalRequest._retry = true
 
             if (!isRefreshing) {
                 isRefreshing = true
                 try {
-                    await axiosInstance.post("/users/refresh-token")
+                    // Plain axios call — deliberately bypasses axiosInstance's interceptors
+                    // so this request can never recursively re-trigger this same handler.
+                    await axios.post(
+                        `${BASE_URL}/users/refresh-token`,
+                        {},
+                        { withCredentials: true }
+                    )
                     isRefreshing = false
                     onRefreshed()
                 } catch (refreshError) {
                     isRefreshing = false
-                    onRefreshFailed(refreshError) // now properly rejects every queued request
+                    onRefreshFailed(refreshError)
                     return Promise.reject(refreshError)
                 }
             }
