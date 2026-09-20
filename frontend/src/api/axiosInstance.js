@@ -39,7 +39,6 @@ axiosInstance.interceptors.response.use(
                 } catch (refreshError) {
                     isRefreshing = false
                     onRefreshFailed(refreshError) // now properly rejects every queued request
-                    window.location.href = "/login"
                     return Promise.reject(refreshError)
                 }
             }
