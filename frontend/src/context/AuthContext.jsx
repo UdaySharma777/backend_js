@@ -8,19 +8,23 @@ export const AuthProvider = ({ children }) => {
     const [loading, setLoading] = useState(true)
 
     // On app load, ask the backend if the httpOnly cookie is still valid
-    useEffect(() => {
-        const checkAuth = async () => {
-            try {
-                const res = await getCurrentUser()
-                setUser(res.data)
-            } catch (error) {
-                setUser(null)
-            } finally {
-                setLoading(false)
-            }
+useEffect(() => {
+    const checkAuth = async () => {
+        console.log("checkAuth started")
+        try {
+            const res = await getCurrentUser()
+            console.log("checkAuth success", res)
+            setUser(res.data)
+        } catch (error) {
+            console.log("checkAuth failed", error)
+            setUser(null)
+        } finally {
+            console.log("checkAuth finally - setting loading false")
+            setLoading(false)
         }
-        checkAuth()
-    }, [])
+    }
+    checkAuth()
+}, [])
 
     const login = async (credentials) => {
         const res = await loginApi(credentials)
